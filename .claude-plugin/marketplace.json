@@ -1,0 +1,18 @@
+{
+  "name": "polystory",
+  "owner": {
+    "name": "Jakub Wilk"
+  },
+  "metadata": {
+    "description": "polystory: model 3D game assets as code with Blender, as a Claude Code plugin and an Agent Skill.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "polystory",
+      "source": "./",
+      "description": "Model 3D game assets as code: a recipe per model, built headless in Blender, checked and rendered before it ships.",
+      "category": "design"
+    }
+  ]
+}

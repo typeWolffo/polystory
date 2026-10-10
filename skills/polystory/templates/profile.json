@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "blender": "auto",
+  "kinds": {
+    "prop": {
+      "description": "a thing the game places by code: a projectile, a pickup, a piece of set",
+      "models": "assets/models",
+      "recipes": "assets/recipes",
+      "unitsPerMetre": 1,
+      "budget": { "trisTarget": 2500, "trisMax": 6000, "bytesMax": 200000 },
+      "envelope": { "extentMax": 1.0, "centreMax": 0.15 },
+      "preview": { "mount": "turntable", "scaleFigure": true },
+      "ignore": [],
+      "register": { "doc": "Load it by name from code; nothing else to do." }
+    }
+  }
+}

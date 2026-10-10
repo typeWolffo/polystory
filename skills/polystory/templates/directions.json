@@ -1,0 +1,46 @@
+{
+  "toy": {
+    "summary": "Chunky toy plastic: every edge bevelled, everything smooth, saturated flat colours, dark outlines as geometry. Reads at thumbnail size.",
+    "knobs": { "bevel": 0.02, "bevelSegments": 2, "segments": 32, "sphere": [24, 12], "smooth": true, "smoothAngle": 45, "minThickness": 0.025, "materialsPerItem": 3 },
+    "materials": {
+      "base": { "hex": "#6D37E6", "roughness": 0.85, "role": "the dominant mass" },
+      "accent": { "hex": "#F9C748", "roughness": 0.45, "role": "the one bright detail" },
+      "dark": { "hex": "#29004F", "roughness": 0.85, "role": "outlines, handles, frames" },
+      "light": { "hex": "#F6F6F3", "roughness": 0.85, "role": "white parts, highlights" },
+      "glow": { "hex": "#67E1C9", "roughness": 0.6, "emissive": 1.0, "role": "anything that should emit light" }
+    }
+  },
+  "faceted": {
+    "summary": "Classic low poly: flat shaded facets, few segments, no bevel, muted earthy colours. The facets are the texture.",
+    "knobs": { "bevel": 0.0, "bevelSegments": 0, "segments": 10, "sphere": [10, 6], "smooth": false, "smoothAngle": 0, "minThickness": 0.03, "materialsPerItem": 3 },
+    "materials": {
+      "base": { "hex": "#7FA86B", "roughness": 0.95, "role": "the dominant mass" },
+      "accent": { "hex": "#E0A458", "roughness": 0.9, "role": "the one bright detail" },
+      "dark": { "hex": "#3E4A3A", "roughness": 0.95, "role": "shadows, trunks, soles" },
+      "light": { "hex": "#EFE8D6", "roughness": 0.95, "role": "sand, paper, snow" },
+      "glow": { "hex": "#F6D35B", "roughness": 0.8, "emissive": 1.0, "role": "lamps, fire, magic" }
+    }
+  },
+  "clay": {
+    "summary": "Soft clay and pastel: big round bevels, matte everything, low contrast colours. Looks hand-made, forgiving of simple shapes.",
+    "knobs": { "bevel": 0.05, "bevelSegments": 3, "segments": 24, "sphere": [20, 10], "smooth": true, "smoothAngle": 35, "minThickness": 0.04, "materialsPerItem": 3 },
+    "materials": {
+      "base": { "hex": "#F2B8A2", "roughness": 0.98, "role": "the dominant mass" },
+      "accent": { "hex": "#8FB7D9", "roughness": 0.98, "role": "the one contrasting detail" },
+      "dark": { "hex": "#5B4A5E", "roughness": 0.98, "role": "eyes, seams, soles" },
+      "light": { "hex": "#FBF5EC", "roughness": 0.98, "role": "cream parts" },
+      "glow": { "hex": "#FFD9A8", "roughness": 0.9, "emissive": 0.6, "role": "a soft inner light" }
+    }
+  },
+  "hard-surface": {
+    "summary": "Hard-surface product look: tight small bevels, many segments, semi-gloss dark bodies with one metallic or bright accent. For gadgets, vehicles, weapons.",
+    "knobs": { "bevel": 0.008, "bevelSegments": 1, "segments": 48, "sphere": [32, 16], "smooth": true, "smoothAngle": 60, "minThickness": 0.015, "materialsPerItem": 4 },
+    "materials": {
+      "base": { "hex": "#2B2F3A", "roughness": 0.45, "role": "the body" },
+      "accent": { "hex": "#FF5C2E", "roughness": 0.4, "role": "the signal colour" },
+      "dark": { "hex": "#121318", "roughness": 0.5, "role": "grips, seams, vents" },
+      "light": { "hex": "#C9CDD6", "roughness": 0.35, "metallic": 0.8, "role": "brushed metal" },
+      "glow": { "hex": "#4CC3FF", "roughness": 0.3, "emissive": 1.5, "role": "LEDs, screens" }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hook-glb.mjs\"",
+            "timeout": 30,
+            "statusMessage": "polystory: checking GLBs"
+          }
+        ]
+      }
+    ]
+  }
+}
