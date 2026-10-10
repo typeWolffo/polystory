@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "polystory: model 3D assets as code with three.js, as a Claude Code plugin.",
-    "version": "0.3.0"
+    "version": "0.3.1"
   },
   "plugins": [
     {

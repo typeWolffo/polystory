@@ -2,7 +2,7 @@
 name: polystory
 description: Model 3D game assets as code with three.js. One TypeScript recipe per model, built in node into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for the agent, then reviewed by the user in a local page with pins and registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Blender optional. Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
 argument-hint: "init | style [derive|throw] | new <kind> <id> [description] | doctor"
-allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts" *), Read(${CLAUDE_SKILL_DIR}/**)
+allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(command -v polystory), Read(${CLAUDE_SKILL_DIR}/**)
 ---
 
 # polystory
@@ -20,13 +20,10 @@ when it is installed, `export --fbx` writes FBX through it.
 
 ## The CLI
 
-Every step below runs the `polystory` CLI. Resolve it once per session:
-
-- In a Claude Code plugin install, `${CLAUDE_PLUGIN_ROOT}` is a real path:
-  use `node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts" <command>`.
-- Otherwise (a skill copied into `.claude/skills/`, another agent, or the
-  text above still reads `${CLAUDE_PLUGIN_ROOT}` literally): use
-  `npx -y polystory <command>`, or `polystory <command>` when it is on PATH.
+Every step below runs the `polystory` CLI from npm, whatever installed
+the skill. Resolve it once per session: when `command -v polystory` prints
+a path (a global install, or `npm link` in a checkout of polystory), use
+`polystory <command>`; otherwise `npx -y polystory <command>`.
 
 `polystory` alone prints the commands. Node 24+ is required, and Chrome,
 Edge or a Playwright Chromium for renders; `polystory doctor` says what is

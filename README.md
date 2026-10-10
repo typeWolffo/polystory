@@ -100,7 +100,8 @@ claude plugin install polystory --marketplace typeWolffo/polystory
 ```
 
 Or in two steps: `claude plugin marketplace add typeWolffo/polystory`, then
-`claude plugin install polystory@polystory`. The skill is `/polystory:polystory`.
+`claude plugin install polystory@polystory`. The skill is `/polystory:polystory`; like
+every route, it runs the CLI from npm on first use (`npx -y polystory`).
 
 **Any agent, as a skill** (Claude Code, Codex, Cursor, Gemini CLI, Copilot and the other agents the [skills CLI](https://skills.sh) supports):
 
@@ -122,7 +123,8 @@ npx polystory install -g     # or into ~/.claude/skills/
 again as `npx polystory@latest install`: a bare `npx polystory` may reuse
 an older version from npx's cache.
 
-**To try a checkout:** `npm install` in it, then `claude --plugin-dir /path/to/polystory`.
+**To try a checkout:** `npm install && npm run build && npm link` in it; every
+route then calls the checkout's `polystory` instead of the one on npm.
 
 ## The CLI
 
@@ -211,8 +213,8 @@ test/                    node --test; the render test skips when no browser is f
 docs/                    the renders in this README
 ```
 
-TypeScript throughout, run directly by node 24 (no build for the plugin
-route); `npm run build` emits `dist/` for the npm package.
+TypeScript throughout, run directly by node 24 in a checkout
+(`npm run polystory -- <command>`); `npm run build` emits `dist/` for the npm package.
 
 ## Status and roadmap
 

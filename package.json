@@ -1,6 +1,6 @@
 {
   "name": "polystory",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Model 3D game assets as code with three.js and an AI coding agent: one TypeScript recipe per model, built in node into a GLB, checked against your project's budgets and palette, rendered in a headless browser and reviewed with pins in yours. A Claude Code plugin and an Agent Skill, with a CLI any agent can call. Blender optional.",
   "keywords": [
     "3d",
