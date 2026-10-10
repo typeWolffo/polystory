@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hook-glb.mjs\"",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts\" hook",
             "timeout": 30,
             "statusMessage": "polystory: checking GLBs"
           }

@@ -1,6 +1,6 @@
-__pycache__/
-*.pyc
+web/src/
 test/
 docs/
 *.tgz
 .DS_Store
+tsconfig*.json

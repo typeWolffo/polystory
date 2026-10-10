@@ -1,11 +1,17 @@
 {
   "name": "polystory",
-  "displayName": "polystory",
-  "version": "0.1.0",
-  "description": "Model 3D game assets as code: one Python recipe per model, built headless in Blender into a GLB, checked against your project's budgets and palette, rendered for review. init writes the facts, style the look, new builds a model.",
-  "author": { "name": "Jakub Wilk" },
-  "homepage": "https://github.com/typeWolffo/polystory",
-  "repository": "https://github.com/typeWolffo/polystory",
-  "license": "MIT",
-  "keywords": ["3d", "blender", "gltf", "glb", "low-poly", "game-assets", "three.js", "procedural-modeling"]
+  "version": "0.2.0",
+  "description": "Model 3D assets as code: a recipe per model, built headless in Blender, checked against the project's profile and style, rendered for a look. init writes the facts, style the look, new builds a model.",
+  "author": {
+    "name": "typeWolffo"
+  },
+  "keywords": [
+    "3d",
+    "blender",
+    "gltf",
+    "glb",
+    "low-poly",
+    "game-assets",
+    "three.js"
+  ]
 }

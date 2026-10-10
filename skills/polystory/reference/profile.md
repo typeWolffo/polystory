@@ -14,7 +14,7 @@ Two files the scripts read, one the modeller reads, and generated state.
 ```
 
 Paths are relative to the project root; `~/` is allowed for files outside
-it (a `.blend` that is not committed). The nearest `.polystory/` above the
+it. The nearest `.polystory/` above the
 working directory is the project; `--project <root>` or `POLYSTORY_PROJECT`
 override.
 
@@ -36,7 +36,7 @@ override.
       "budget": { "trisTarget": 4000, "trisMax": 8000, "bytesMax": 300000 },
       "skinnedBudget": { "trisTarget": 7500, "trisMax": 9000, "bytesMax": 300000 },
       "envelope": { "extentMax": 1.0, "centreMax": 0.15 },
-      "rig": { "blend": "~/models/rig.blend", "glb": "path/to/rig.glb", "unitsPerMetre": 1.654, "hideCollections": ["accessories"] },
+      "rig": { "glb": "path/to/rig.glb", "unitsPerMetre": 1.654, "clip": "idle", "clipAt": 0.4 },
       "preview": { "mount": "socket", "socket": "socket_hand_R", "offset": [-0.5, -0.3, 0.2], "farMetres": 7, "scaleFigure": true },
       "ignore": ["rig*", "set*"],
       "register": { "command": "bun scripts/add-item.ts {id} {slot} {model} --name \"{name}\"", "doc": "what to run or edit after a build" }
@@ -45,11 +45,12 @@ override.
 }
 ```
 
-- `blender`: `"auto"` looks on PATH and in the usual places;
-  `POLYSTORY_BLENDER` wins over both.
+- `blender`: optional, only for `polystory open` and `export --fbx`.
+  `"auto"` looks on PATH and in the usual places; `POLYSTORY_BLENDER`
+  wins over both.
 - `kinds`: one entry per folder of models. A kind is a lower-case word.
 - `models`, `recipes`: `models/<model>.glb` is built from
-  `recipes/<model>.py`; the paths mirror. A model with no recipe is
+  `recipes/<model>.ts`; the paths mirror. A model with no recipe is
   hand-made and gets warnings where a recipe-built one gets errors.
 - `unitsPerMetre`: how many recipe units make a metre. `1` for metres;
   a rig's `height in units / height in metres` for items in rig space.
@@ -64,10 +65,13 @@ override.
 - `budget`: `trisTarget` warns, `trisMax` and `bytesMax` fail.
   `skinnedBudget` is the same for files that carry a skin; without it a
   skinned file fails the check.
-- `rig`: for previews and skinned checks. `blend` is the file the preview
-  opens, never saves; `hideCollections` are hidden while rendering; `glb`
-  is the exported rig whose joints a skinned file must use;
-  `unitsPerMetre` is the rig file's scale (defaults to the kind's).
+- `rig`: for previews and skinned checks. `glb` is the rig as the game
+  loads it, with its sockets as named nodes; the preview mounts the item
+  on them, and a skinned file must use its joints. `unitsPerMetre` is the
+  rig's scale (defaults to the kind's). `clip` names an animation in the
+  file to pose the rig with (default: `idle` when the file has one, else
+  the bind pose) and `clipAt` the second of it to freeze at, so renders
+  show the character as the game does, not in a T-pose.
 - `preview.mount`: `socket` hangs the item under its slot's socket;
   `beside` floats it at `socket` + `offset` (rig units) as a prop about
   to be thrown; `turntable` stands it on a checker floor (0.1 m cells),

@@ -1,19 +1,23 @@
 {
   "name": "polystory",
-  "version": "0.1.0",
-  "description": "Model 3D assets as code with Blender and an AI coding agent: one Python recipe per model, built headless into a GLB, checked against your project's budgets and palette, rendered for review. A Claude Code plugin and an Agent Skill, with a CLI any agent can call.",
+  "version": "0.2.0",
+  "description": "Model 3D game assets as code with three.js and an AI coding agent: one TypeScript recipe per model, built in node into a GLB, checked against your project's budgets and palette, rendered in a headless browser and reviewed with pins in yours. A Claude Code plugin and an Agent Skill, with a CLI any agent can call. Blender optional.",
   "keywords": [
     "3d",
     "3d-modeling",
-    "blender",
+    "threejs",
+    "three.js",
     "gltf",
     "glb",
     "low-poly",
     "game-assets",
     "game-dev",
     "procedural-modeling",
-    "threejs",
     "react-three-fiber",
+    "godot",
+    "unity",
+    "unreal",
+    "blender",
     "claude-code",
     "claude-code-plugin",
     "agent-skills",
@@ -23,15 +27,27 @@
     "cursor"
   ],
   "license": "MIT",
-  "author": { "name": "typeWolffo" },
+  "author": {
+    "name": "typeWolffo"
+  },
   "homepage": "https://github.com/typeWolffo/polystory#readme",
-  "repository": { "type": "git", "url": "git+https://github.com/typeWolffo/polystory.git" },
-  "bugs": { "url": "https://github.com/typeWolffo/polystory/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/typeWolffo/polystory.git"
+  },
+  "bugs": {
+    "url": "https://github.com/typeWolffo/polystory/issues"
+  },
   "type": "module",
-  "bin": { "polystory": "scripts/polystory.mjs" },
+  "bin": {
+    "polystory": "dist/scripts/polystory.js"
+  },
   "files": [
+    "dist/",
     "scripts/",
-    "templates/",
+    "web/preview.html",
+    "web/review.html",
+    "web/dist/",
     "skills/",
     "hooks/",
     ".claude-plugin/",
@@ -39,8 +55,30 @@
     "LICENSE"
   ],
   "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.web.json",
+    "build:web": "tsc -p tsconfig.web.json",
+    "check-types": "tsc -p tsconfig.json && tsc -p tsconfig.web.json --noEmit",
     "test": "node --test",
-    "polystory": "node scripts/polystory.mjs"
+    "prepublishOnly": "npm test",
+    "polystory": "node scripts/polystory.ts",
+    "prepack": "npm run build"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "playwright-core": "1.49.1",
+    "three": "0.170.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/three": "0.170.0",
+    "typescript": "5.7.2"
+  },
+  "exports": {
+    ".": {
+      "types": "./scripts/kit/index.ts",
+      "default": "./dist/scripts/kit/index.js"
+    }
+  }
 }

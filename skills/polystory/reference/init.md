@@ -31,8 +31,6 @@ Scan enough that the user never repeats what the repo already says:
   Only for the write-up; the build is the same.
 - How a model reaches the game today: a catalog file, a `?url` import, a
   resource path. That becomes `register`.
-- A Blender source outside the repo (a `.blend` next to the project, a path
-  in a README).
 
 Treat what you find as a hypothesis the user confirms, not as a fact.
 
@@ -48,8 +46,8 @@ Ask, in this order, as needed:
    mounting point (hats/, face/, hand/) is one kind with slots.
 2. **Units.** Metres, or a rig's units (give the rig height in units and in
    metres; `unitsPerMetre` is their ratio).
-3. **Rig and sockets.** The `.blend` the previews mount on, which
-   collections to hide while rendering, the socket per slot. Without a
+3. **Rig and sockets.** The rig GLB the game loads, with its sockets as
+   named nodes (the scan lists them), the socket per slot. Without a
    rig, previews are a turntable.
 4. **Budgets.** Propose from the scan: target = the p90 of the existing
    files rounded up, cap = 1.5× that, bytes = the max rounded up. The user
@@ -65,10 +63,11 @@ Do not ask about colours, bevels, style or references: that is `style`.
 - `.polystory/profile.json` per the reference. `~/` is allowed in paths
   outside the project; everything else is relative to the project root.
 - Create each kind's `recipes` folder when it does not exist, with a
-  one-paragraph README: one Python file per model, `recipes/<model>.py`
+  one-paragraph README: one TypeScript file per model, `recipes/<model>.ts`
   builds `models/<model>.glb`, built by `polystory new`.
 - Add `.polystory/.glb-check-stamp`, `.polystory/scan.json`,
-  `.polystory/previews/` and `.polystory/calibration/` to `.gitignore`.
+  `.polystory/previews/`, `.polystory/review/` and `.polystory/calibration/`
+  to `.gitignore`.
 
 ## 5. Verify and hand over
 

@@ -2,31 +2,35 @@
 name: polystory
 description: Model 3D game assets as code with Blender. One Python recipe per model, built headless into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for review, then registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
 argument-hint: "init | style [derive|throw] | new <kind> <id> [description] | doctor"
-allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.mjs" *), Read(${CLAUDE_SKILL_DIR}/**)
+allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts" *), Read(${CLAUDE_SKILL_DIR}/**)
 ---
 
 # polystory
 
-A model is a recipe: a short Python file with an `ITEM` dict and a
-`build(kit)` function. `polystory build` runs it in `blender -b`, exports
-a GLB, and checks the bytes against the project's profile (budgets,
+A model is a recipe: a short TypeScript module exporting `ITEM` and
+`build(kit)`. `polystory build` runs it with three.js in node, writes a
+GLB, and checks the bytes against the project's profile (budgets,
 envelopes, slots) and style (palette, knobs). `polystory preview` renders
-it for a look. Nothing is modelled by hand, so the same recipe gives the
-same geometry on any machine, and the look is written down once per
-project in `.polystory/` instead of carried in anyone's head.
+it in a headless browser for a look; `polystory review` opens it in the
+user's browser with pins for notes. Nothing is modelled by hand, so the
+same recipe gives the same geometry on any machine, and the look is
+written down once per project in `.polystory/` instead of carried in
+anyone's head. Blender is optional: `polystory open` shows a model there
+when it is installed, `export --fbx` writes FBX through it.
 
 ## The CLI
 
 Every step below runs the `polystory` CLI. Resolve it once per session:
 
 - In a Claude Code plugin install, `${CLAUDE_PLUGIN_ROOT}` is a real path:
-  use `node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.mjs" <command>`.
+  use `node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts" <command>`.
 - Otherwise (a skill copied into `.claude/skills/`, another agent, or the
   text above still reads `${CLAUDE_PLUGIN_ROOT}` literally): use
   `npx -y polystory <command>`, or `polystory <command>` when it is on PATH.
 
-`polystory` alone prints the commands. Blender 4.2+ and node 20+ are
-required; `polystory doctor` says what is missing.
+`polystory` alone prints the commands. Node 24+ is required, and Chrome,
+Edge or a Playwright Chromium for renders; `polystory doctor` says what is
+missing.
 
 ## Commands
 
