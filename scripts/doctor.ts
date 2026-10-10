@@ -8,6 +8,7 @@ import { join, resolve } from "node:path";
 
 import { blenderVersion, findBlender, findProject, loadProfile, loadStyle, PROFILE_DIR, projectPath, STYLE_DOC } from "./lib/profile.ts";
 import { findBrowser } from "./render.ts";
+import { paint, status as statusLabel } from "./lib/term.ts";
 
 export type Row = { status: "OK" | "WARN" | "FAIL" | "INFO"; what: string; detail: string };
 
@@ -61,10 +62,10 @@ export function runDoctor(argv: string[]): number {
 
   const rows = diagnose(projectArg ? resolve(projectArg) : findProject());
 
-  for (const r of rows) console.log(`${r.status.padEnd(4)} ${r.what}${r.detail ? `  ${r.detail}` : ""}`);
+  for (const r of rows) console.log(`${statusLabel(r.status)} ${r.what}${r.detail ? `  ${paint("dim", r.detail)}` : ""}`);
 
   const failed = rows.some((r) => r.status === "FAIL");
-  console.log(failed ? "\nnot ready" : "\nready");
+  console.log(`\n${failed ? paint(["bold", "red"], "not ready") : paint(["bold", "green"], "ready")}`);
 
   return failed ? 1 : 0;
 }

@@ -8,6 +8,7 @@ import { join, relative, resolve } from "node:path";
 import type { Knobs } from "./kit/types.ts";
 import { blenderVersion, findBlender, findProject, isIgnored, loadProfile, loadStyle, PROFILE_DIR, projectPath, recipeFor, SCAN_FILE, STYLE_DOC, type Budget, type Register } from "./lib/profile.ts";
 import { findBrowser } from "./render.ts";
+import { paint } from "./lib/term.ts";
 import { findGlbs } from "./scan.ts";
 
 type KindContext = {
@@ -112,14 +113,14 @@ function findRecipes(dir: string): string[] {
 
 export function render(ctx: Context): string {
   const lines: string[] = [];
-  lines.push(`project: ${ctx.root ?? "(none)"}`);
-  lines.push(`node ${ctx.node} · renders: ${ctx.browser ?? "NO BROWSER"} · blender: ${ctx.blender ? `${ctx.blender.version} (optional, for open and export --fbx)` : "not installed (optional)"}`);
+  lines.push(`${paint("bold", "project:")} ${ctx.root ?? "(none)"}`);
+  lines.push(`node ${ctx.node} · renders: ${ctx.browser ?? paint("red", "NO BROWSER")} · blender: ${ctx.blender ? `${ctx.blender.version} (optional, for open and export --fbx)` : "not installed (optional)"}`);
 
   if (ctx.profile) {
-    lines.push(`profile: ${ctx.profile.problems.length ? `PROBLEMS: ${ctx.profile.problems.join("; ")}` : "ok"}`);
+    lines.push(`${paint("bold", "profile:")} ${ctx.profile.problems.length ? paint("red", `PROBLEMS: ${ctx.profile.problems.join("; ")}`) : paint("green", "ok")}`);
 
     for (const [name, k] of Object.entries(ctx.kinds)) {
-      lines.push(`kind ${name}: ${k.files} models in ${k.models} (${k.handMade} hand-made, ${k.ignored} ignored), ${k.recipesCount} recipes in ${k.recipes}${k.unbuilt.length ? `, UNBUILT: ${k.unbuilt.join(", ")}` : ""}`);
+      lines.push(`${paint("bold", `kind ${name}:`)} ${k.files} models in ${k.models} (${k.handMade} hand-made, ${k.ignored} ignored), ${k.recipesCount} recipes in ${k.recipes}${k.unbuilt.length ? paint("yellow", `, UNBUILT: ${k.unbuilt.join(", ")}`) : ""}`);
       lines.push(`  units/m ${k.unitsPerMetre} · budget ${k.budget.trisTarget}/${k.budget.trisMax} tris, ${Math.round(k.budget.bytesMax / 1024)} kB${k.skinnedBudget ? ` · skinned ${k.skinnedBudget.trisTarget}/${k.skinnedBudget.trisMax}` : ""} · preview ${k.preview}${k.rig ? ` on ${k.rig}` : ""}`);
 
       if (k.slots) lines.push(`  slots: ${k.slots.join(", ")}`);
@@ -132,30 +133,31 @@ export function render(ctx: Context): string {
 
   if (ctx.style) {
     const kn = ctx.style.knobs;
-    lines.push(`style: ${ctx.style.direction ?? "unnamed"} · bevel ${kn.bevel}×${kn.bevelSegments} · segments ${kn.segments} · ${kn.smooth ? `smooth, sharp over ${kn.smoothAngle}°` : "flat shaded"} · min thickness ${kn.minThickness} · ${ctx.style.materials} materials${ctx.style.problems.length ? ` · PROBLEMS: ${ctx.style.problems.join("; ")}` : ""}`);
+    lines.push(`${paint("bold", "style:")} ${ctx.style.direction ?? "unnamed"} · bevel ${kn.bevel}×${kn.bevelSegments} · segments ${kn.segments} · ${kn.smooth ? `smooth, sharp over ${kn.smoothAngle}°` : "flat shaded"} · min thickness ${kn.minThickness} · ${ctx.style.materials} materials${ctx.style.problems.length ? paint("red", ` · PROBLEMS: ${ctx.style.problems.join("; ")}`) : ""}`);
   }
 
-  lines.push(`scan: ${ctx.scan ? ctx.scan.at : "none (polystory scan)"}`);
+  lines.push(`${paint("bold", "scan:")} ${ctx.scan ? ctx.scan.at : "none (polystory scan)"}`);
 
   if (ctx.missing.length) {
-    lines.push("missing:");
+    lines.push(paint(["bold", "yellow"], "missing:"));
 
-    for (const m of ctx.missing) lines.push(`  - ${m}`);
+    for (const m of ctx.missing) lines.push(paint("yellow", `  - ${m}`));
   }
 
-  lines.push(`next: ${nextStep(ctx)}`);
+  const next = nextStep(ctx);
+  lines.push(`${paint("bold", "next:")} ${paint("cyan", next.command)} ${paint("dim", `— ${next.reason}`)}`);
 
   return lines.join("\n");
 }
 
-export function nextStep(ctx: Context): string {
-  if (!ctx.root) return "init — no .polystory/profile.json here yet";
+export function nextStep(ctx: Context): { command: string; reason: string } {
+  if (!ctx.root) return { command: "init", reason: "no .polystory/profile.json here yet" };
 
-  if (ctx.profile?.problems.length) return "doctor — the profile has problems";
+  if (ctx.profile?.problems.length) return { command: "doctor", reason: "the profile has problems" };
 
-  if (!ctx.style || ctx.style.problems.length || !ctx.style.doc) return "style — the profile is in place, the look is not";
+  if (!ctx.style || ctx.style.problems.length || !ctx.style.doc) return { command: "style", reason: "the profile is in place, the look is not" };
 
-  return `new <${Object.keys(ctx.kinds).join("|")}> <id> [description] — profile and style are in place`;
+  return { command: `new <${Object.keys(ctx.kinds).join("|")}> <id> [description]`, reason: "profile and style are in place" };
 }
 
 export function runContext(argv: string[]): number {

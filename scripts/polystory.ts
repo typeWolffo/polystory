@@ -7,7 +7,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 
 import { checkFile, runCheck } from "./check.ts";
 import { gather, nextStep, runContext } from "./context.ts";
@@ -17,7 +17,8 @@ import type { Item, Style } from "./kit/types.ts";
 import { blenderVersion, findBlender, findProject, kindOfFile, loadProfile, loadStyle, modelPathFor, PROFILE_DIR, projectPath, recipeFor, slotOfFile, type Kind, type Preview, type Profile } from "./lib/profile.ts";
 import { renderViews } from "./render.ts";
 import { runReview } from "./review.ts";
-import { SKILL_DIR, TEMPLATES_DIR } from "./lib/paths.ts";
+import { PACKAGE_ROOT, SKILL_DIR, TEMPLATES_DIR } from "./lib/paths.ts";
+import { box, paint } from "./lib/term.ts";
 import { runScan } from "./scan.ts";
 import type { ReviewPayload, StatusPayload, ViewerConfig } from "./server.ts";
 
@@ -498,8 +499,17 @@ const commands: Record<string, (argv: string[]) => number | Promise<number>> = {
     mkdirSync(dirname(target), { recursive: true });
     rmSync(target, { recursive: true, force: true });
     cpSync(SKILL, target, { recursive: true });
-    console.log(`polystory skill installed at ${target}`);
-    console.log(`next: /polystory ${nextStep(gather(findProject()))}`);
+    const cwd = process.cwd();
+    const shown = target.startsWith(cwd + sep) ? relative(cwd, target) : target.replace(homedir(), "~");
+    const { version } = JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8"));
+    const next = nextStep(gather(findProject()));
+    console.log(box([
+      `${paint("bold", "polystory")} ${paint("dim", version)}`,
+      "",
+      `${paint("green", "✔")} skill  ${shown}`,
+      `${paint("cyan", "→")} next   ${paint(["bold", "cyan"], `/polystory ${next.command}`)}`,
+      `         ${paint("dim", next.reason)}`,
+    ]));
 
     return 0;
   },

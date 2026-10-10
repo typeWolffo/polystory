@@ -8,6 +8,7 @@ import { basename, relative, resolve } from "node:path";
 
 import type { Style } from "./kit/types.ts";
 import { materialSummary, meshStats, readGlb, rootTransformOff, skinJointNames, srgbHexToLinear } from "./lib/glb.ts";
+import { paint, status as statusLabel } from "./lib/term.ts";
 import { findProject, isIgnored, kindOfFile, loadProfile, loadStyle, projectPath, recipeFor, slotOfFile, type Profile } from "./lib/profile.ts";
 
 export type Verdict = { errors: string[]; warnings: string[]; summary: string };
@@ -187,7 +188,7 @@ export function runCheck(argv: string[]): number {
     const shown = relative(process.cwd(), abs).startsWith("..") ? abs : relative(process.cwd(), abs) || abs;
 
     if (!existsSync(abs) || !statSync(abs).isFile()) {
-      console.log(`FAIL ${shown}\n     ✗ no such file`);
+      console.log(`${statusLabel("FAIL")} ${shown}\n     ${paint("red", "✗ no such file")}`);
       failed = true;
       continue;
     }
@@ -195,17 +196,17 @@ export function runCheck(argv: string[]): number {
     const located = kindOfFile(root, profile, abs);
 
     if (located && isIgnored(located.kind, located.rel)) {
-      console.log(`SKIP ${shown}\n     ignored by the profile (${located.name}.ignore)`);
+      console.log(`${statusLabel("SKIP")} ${shown}\n     ${paint("dim", `ignored by the profile (${located.name}.ignore)`)}`);
       continue;
     }
 
     const { errors, warnings, summary } = checkFile({ root, profile, style, file: abs, kindName });
     const status = errors.length ? "FAIL" : warnings.length ? "WARN" : "OK";
-    console.log(`${status} ${shown}\n     ${summary}`);
+    console.log(`${statusLabel(status)} ${shown}\n     ${paint("dim", summary)}`);
 
-    for (const w of warnings) console.log(`     ! ${w}`);
+    for (const w of warnings) console.log(`     ${paint("yellow", `! ${w}`)}`);
 
-    for (const e of errors) console.log(`     ✗ ${e}`);
+    for (const e of errors) console.log(`     ${paint("red", `✗ ${e}`)}`);
 
     if (errors.length) failed = true;
   }
