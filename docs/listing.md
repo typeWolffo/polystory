@@ -49,7 +49,7 @@ portal validates the manifest and scans the repo; the listing appears in
   and a Chrome or Chromium for renders; Blender optional.
 
 - **Category**: Design / Creative tools (or Developer tools)
-- **Components**: one skill (`polystory`), one PostToolUse hook (Claude Code only).
+- **Components**: one skill (`polystory`).
 
 ## skills.sh and the skills CLI
 

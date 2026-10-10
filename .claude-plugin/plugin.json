@@ -1,7 +1,7 @@
 {
   "name": "polystory",
-  "version": "0.2.0",
-  "description": "Model 3D assets as code: a recipe per model, built headless in Blender, checked against the project's profile and style, rendered for a look. init writes the facts, style the look, new builds a model.",
+  "version": "0.3.0",
+  "description": "Model 3D assets as code: a recipe per model, built with three.js in node, checked against the project's profile and style, rendered for a look and reviewed with pins. init writes the facts, style the look, new builds a model.",
   "author": {
     "name": "typeWolffo"
   },

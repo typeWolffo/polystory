@@ -3,16 +3,15 @@
 // profile and the style, builds with three.js in node, renders in a
 // headless browser, and hands Blender the optional jobs.
 //
-//   polystory context|doctor|scan|check|build|item|register|preview|review|calibrate|open|export|guide|install|hook [args]
+//   polystory context|doctor|scan|check|build|item|register|preview|review|calibrate|open|export|guide|install [args]
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 
 import { checkFile, runCheck } from "./check.ts";
-import { runContext } from "./context.ts";
+import { gather, nextStep, runContext } from "./context.ts";
 import { runDoctor } from "./doctor.ts";
-import { runHook } from "./hook-glb.ts";
 import { buildToFile, knobsFor, loadRecipe } from "./kit/build.ts";
 import type { Item, Style } from "./kit/types.ts";
 import { blenderVersion, findBlender, findProject, kindOfFile, loadProfile, loadStyle, modelPathFor, PROFILE_DIR, projectPath, recipeFor, slotOfFile, type Kind, type Preview, type Profile } from "./lib/profile.ts";
@@ -41,7 +40,6 @@ const USAGE = `usage: polystory <command> [args]
   export --fbx <glb> [--out <fbx>]      write FBX through Blender (optional, when installed)
   guide <name>                          print a reference or template of the skill
   install [-g] [--dir <path>]           copy the polystory skill into .claude/skills/ (project) or ~/.claude/skills/ (-g)
-  hook                                  the PostToolUse hook body: reads the tool call on stdin
   blender                               print the Blender binary in use, if any
 
 Every command takes --project <root>; otherwise the nearest .polystory/ above the working directory is used.`;
@@ -202,7 +200,6 @@ const commands: Record<string, (argv: string[]) => number | Promise<number>> = {
   doctor: runDoctor,
   scan: runScan,
   check: runCheck,
-  hook: () => runHook(readFileSync(0, "utf8")),
 
   blender: (argv) => {
     const { flags } = parse(argv, ["project"]);
@@ -502,9 +499,7 @@ const commands: Record<string, (argv: string[]) => number | Promise<number>> = {
     rmSync(target, { recursive: true, force: true });
     cpSync(SKILL, target, { recursive: true });
     console.log(`polystory skill installed at ${target}`);
-    console.log("in Claude Code it is /polystory; other agents: npx skills add typeWolffo/polystory");
-    console.log("the GLB hook is not part of a skill install; to add it, put this under hooks.PostToolUse in .claude/settings.json:");
-    console.log(JSON.stringify({ matcher: "Bash", hooks: [{ type: "command", command: "npx -y polystory hook", timeout: 30 }] }));
+    console.log(`next: /polystory ${nextStep(gather(findProject()))}`);
 
     return 0;
   },

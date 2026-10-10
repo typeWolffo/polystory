@@ -65,9 +65,8 @@ Do not ask about colours, bevels, style or references: that is `style`.
 - Create each kind's `recipes` folder when it does not exist, with a
   one-paragraph README: one TypeScript file per model, `recipes/<model>.ts`
   builds `models/<model>.glb`, built by `polystory new`.
-- Add `.polystory/.glb-check-stamp`, `.polystory/scan.json`,
-  `.polystory/previews/`, `.polystory/review/` and `.polystory/calibration/`
-  to `.gitignore`.
+- Add `.polystory/scan.json`, `.polystory/previews/`, `.polystory/review/`
+  and `.polystory/calibration/` to `.gitignore`.
 
 ## 5. Verify and hand over
 

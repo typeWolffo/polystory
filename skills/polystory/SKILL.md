@@ -1,6 +1,6 @@
 ---
 name: polystory
-description: Model 3D game assets as code with Blender. One Python recipe per model, built headless into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for review, then registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
+description: Model 3D game assets as code with three.js. One TypeScript recipe per model, built in node into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for the agent, then reviewed by the user in a local page with pins and registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Blender optional. Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
 argument-hint: "init | style [derive|throw] | new <kind> <id> [description] | doctor"
 allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/polystory.ts" *), Read(${CLAUDE_SKILL_DIR}/**)
 ---
@@ -34,7 +34,7 @@ missing.
 
 ## Commands
 
-| `$ARGUMENTS[0]` | Does | Load with |
+| Subcommand | Does | Load with |
 | --- | --- | --- |
 | `init` | writes `.polystory/profile.json`: the facts, by scan and interview | `polystory guide init` |
 | `style` | writes `.polystory/style.json` and `style.md`: the look, derived or chosen | `polystory guide style` |

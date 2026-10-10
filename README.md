@@ -100,9 +100,7 @@ claude plugin install polystory --marketplace typeWolffo/polystory
 ```
 
 Or in two steps: `claude plugin marketplace add typeWolffo/polystory`, then
-`claude plugin install polystory@polystory`. The skill is `/polystory:polystory`;
-the plugin also installs a hook that checks any GLB a shell command writes
-under a models folder.
+`claude plugin install polystory@polystory`. The skill is `/polystory:polystory`.
 
 **Any agent, as a skill** (Claude Code, Codex, Cursor, Gemini CLI, Copilot and the other agents the [skills CLI](https://skills.sh) supports):
 
@@ -119,6 +117,10 @@ use (`npx -y polystory`).
 npx polystory install        # copies the skill into ./.claude/skills/polystory
 npx polystory install -g     # or into ~/.claude/skills/
 ```
+
+`install` ends by naming the subcommand to run next. To update, run it
+again as `npx polystory@latest install`: a bare `npx polystory` may reuse
+an older version from npx's cache.
 
 **To try a checkout:** `npm install` in it, then `claude --plugin-dir /path/to/polystory`.
 
@@ -138,7 +140,6 @@ polystory open <glb>                   show the file in Blender, when Blender is
 polystory export --fbx <glb>           write FBX through Blender, when Blender is installed
 polystory item <recipe.ts>             the recipe's ITEM as JSON
 polystory install [-g]                 copy the skill into .claude/skills/
-polystory hook                         the PostToolUse hook body, for a hand-written settings.json
 ```
 
 `npx polystory <command>` runs it without installing; `--project <root>`
@@ -204,9 +205,8 @@ mesh every time and no way to say "the same hat, brim 10% wider".
 .claude-plugin/          plugin.json, marketplace.json (the repo is its own one-plugin marketplace)
 skills/polystory/        SKILL.md, reference/ (init, style, new, doctor, profile, recipe, craft), templates/
 scripts/                 polystory.ts (CLI), kit/ (geometry, shading, GLB writer, build), lib/ (profile, GLB reader),
-                         check, scan, context, doctor, hook, server, render, review
+                         check, scan, context, doctor, server, render, review
 web/                     the scene shared by the preview renderer and the review page (src/ → dist/)
-hooks/                   hooks.json (the plugin's PostToolUse hook)
 test/                    node --test; the render test skips when no browser is found
 docs/                    the renders in this README
 ```
@@ -218,7 +218,7 @@ route); `npm run build` emits `dist/` for the npm package.
 
 - **Now**: the engine, the profile/style split, `init` by scan and
   interview, `style` by derivation or a calibration throw, `new`, the
-  review page, `doctor`, the hook, the three install routes, Blender as
+  review page, `doctor`, the three install routes, Blender as
   an optional viewer and FBX exporter.
 - **Next**: notes made in Blender's own viewport coming back the same way
   the page's pins do, and a pack of starter kinds (pickup, projectile,

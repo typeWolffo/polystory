@@ -143,7 +143,19 @@ export function render(ctx: Context): string {
     for (const m of ctx.missing) lines.push(`  - ${m}`);
   }
 
+  lines.push(`next: ${nextStep(ctx)}`);
+
   return lines.join("\n");
+}
+
+export function nextStep(ctx: Context): string {
+  if (!ctx.root) return "init — no .polystory/profile.json here yet";
+
+  if (ctx.profile?.problems.length) return "doctor — the profile has problems";
+
+  if (!ctx.style || ctx.style.problems.length || !ctx.style.doc) return "style — the profile is in place, the look is not";
+
+  return `new <${Object.keys(ctx.kinds).join("|")}> <id> [description] — profile and style are in place`;
 }
 
 export function runContext(argv: string[]): number {

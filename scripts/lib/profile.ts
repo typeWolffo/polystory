@@ -13,7 +13,6 @@ export const PROFILE_FILE = "profile.json";
 export const STYLE_FILE = "style.json";
 export const STYLE_DOC = "style.md";
 export const SCAN_FILE = "scan.json";
-export const STAMP_FILE = ".glb-check-stamp";
 
 export type Budget = { trisTarget: number; trisMax: number; bytesMax: number };
 export type Envelope = Record<string, number>;
