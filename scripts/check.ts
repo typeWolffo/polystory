@@ -7,7 +7,7 @@ import { existsSync, statSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
 
 import type { Style } from "./kit/types.ts";
-import { materialSummary, meshStats, readGlb, rootTransformOff, skinJointNames, srgbHexToLinear } from "./lib/glb.ts";
+import { type Gltf, materialSummary, meshStats, readGlb, rootTransformOff, skinJointNames, srgbHexToLinear } from "./lib/glb.ts";
 import { paint, status as statusLabel } from "./lib/term.ts";
 import { findProject, isIgnored, kindOfFile, loadProfile, loadStyle, projectPath, recipeFor, slotOfFile, type Profile } from "./lib/profile.ts";
 
@@ -39,7 +39,11 @@ export function checkFile({ root, profile, style, file, kindName }: { root: stri
 
   if (gltf.images?.length || gltf.textures?.length) errors.push("textures are not part of the style: flat palette colours only");
 
-  if (gltf.animations?.length) errors.push(`a ${name} carries no animation`);
+  for (const animation of gltf.animations ?? []) {
+    for (const channel of animation.channels ?? []) {
+      if (channel.target.node === undefined || !nodes[channel.target.node]) errors.push(`clip "${animation.name ?? "unnamed"}" moves a node the file does not have`);
+    }
+  }
 
   for (const index of gltf.scenes?.[0]?.nodes ?? []) {
     const node = nodes[index];
@@ -142,9 +146,16 @@ export function checkFile({ root, profile, style, file, kindName }: { root: stri
     }
   }
 
-  const summary = `${name}${skinned ? " (skinned)" : ""} · ${stats.tris} tris · ${stats.verts} verts · ${(bytes / 1024).toFixed(0)} kB · ${materials.map((m) => m.name).join(", ") || "no materials"}`;
+  const parts = nodes.filter((n, i) => n.mesh !== undefined && !(gltf.scenes?.[0]?.nodes ?? []).includes(i)).length;
+  const clips = (gltf.animations ?? []).map((a) => `${a.name ?? "unnamed"} ${clipSeconds(gltf, a).toFixed(2)} s`);
+  const moving = [parts ? `${parts} part${parts === 1 ? "" : "s"}` : "", clips.length ? `clips ${clips.join(", ")}` : ""].filter(Boolean).map((s) => ` · ${s}`).join("");
+  const summary = `${name}${skinned ? " (skinned)" : ""} · ${stats.tris} tris · ${stats.verts} verts · ${(bytes / 1024).toFixed(0)} kB · ${materials.map((m) => m.name).join(", ") || "no materials"}${moving}`;
 
   return { errors, warnings, summary };
+}
+
+function clipSeconds(gltf: Gltf, animation: NonNullable<Gltf["animations"]>[number]): number {
+  return Math.max(0, ...(animation.samplers ?? []).map((s) => gltf.accessors?.[s.input]?.max?.[0] ?? 0));
 }
 
 export function runCheck(argv: string[]): number {

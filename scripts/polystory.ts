@@ -483,7 +483,7 @@ const commands: Record<string, (argv: string[]) => number | Promise<number>> = {
     const found = candidates.find((c) => existsSync(c));
 
     if (!found) {
-      console.error("usage: polystory guide <init|style|new|doctor|profile|recipe|craft|slotted|flat|calibration|style.md|profile.json|directions.json>");
+      console.error("usage: polystory guide <init|style|new|doctor|profile|recipe|craft|slotted|flat|animated|calibration|style.md|profile.json|directions.json>");
 
       return 2;
     }

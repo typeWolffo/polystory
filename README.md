@@ -43,22 +43,27 @@ plain GLB, so the engine does not matter.
 
 1. **A recipe is code.** `recipes/bomb.ts` is a dozen lines: an `ITEM`
    object and a `build(kit)` that places cylinders, cones, spheres, boxes,
-   tori, tubes, turned profiles and metaball blobs, each with a palette
-   material. The kit bevels and
-   smooths every part the same way, from the project's style knobs.
+   tori, tubes, turned profiles, metaball blobs, extruded outlines, lofts,
+   hulls, cuts and any three.js geometry, bent, twisted or roughened by
+   warps, each with a palette material. Moving pieces are parts on pivots
+   (a lid's hinge, a wing's shoulder) with clips written as glTF
+   animations. The kit bevels and smooths every part the same way, from
+   the project's style knobs.
 2. **The build is node.** `polystory build recipes/bomb.ts` runs the
    recipe with three.js, writes `models/bomb.glb` in milliseconds, prints
    the triangle count and bounds, and checks the file. No Blender, no
    browser.
 3. **The check reads the bytes.** Triangles and bytes against the kind's
    budget, bounds against the slot's envelope, every material's colour
-   against the palette, no textures, no animation, the root at the origin,
+   against the palette, no textures, clips that move only parts the file
+   has, the root at the origin,
    a skinned file only where the project allows it and only on the rig's
    bones. `FAIL` never ships.
 4. **The renders are looked at.** `polystory preview models/bomb.glb`
    renders three views in headless Chrome: close, on the project's rig,
    and from the game's viewing distance; without a rig, a turntable with
-   a scale figure. The agent opens them, judges, fixes the recipe.
+   a scale figure; a model with clips adds a strip of frames per clip.
+   The agent opens them, judges, fixes the recipe.
 5. **You review with pins.** `polystory review models/bomb.glb` opens the
    model in your browser: orbit it, click the mesh to drop a pin, write
    what is wrong, send. Each pin carries the point, the normal, your
@@ -172,35 +177,6 @@ each primitive are in
 the schemas in [reference/profile.md](skills/polystory/reference/profile.md);
 what makes a model read in [reference/craft.md](skills/polystory/reference/craft.md).
 
-## Questions people ask
-
-**Can Claude Code or Codex make 3D models for my game?** With polystory,
-yes, within a style: the agent writes a recipe, node builds it, the
-check and the renders keep it inside the look you set once, and you
-correct it with pins. It will not sculpt a dragon.
-
-**Do I need Blender?** No. The build is three.js in node, the renders
-are a headless browser. If Blender is installed, `polystory open` shows
-a model in it and `polystory export --fbx` writes FBX for engines that
-want it.
-
-**Do my existing models have to be recipes?** No. `init` and `style`
-read them as they are. A model without a recipe is treated as hand-made:
-it gets warnings where a recipe-built file would get errors.
-
-**Can I use my own engine or format?** The output is a standard GLB
-(Y-up, no textures, one material per colour), which three.js, Babylon,
-Godot, Unity and Unreal import. Registration is whatever your project
-does; the profile holds the command.
-
-**What about clothes, skinned meshes, animations?** Out of scope for a
-recipe. The check knows about skinned files so a project that makes them
-elsewhere can still have them checked against the rig.
-
-**Why recipes instead of a 3D generator?** Repeatability and a style
-that holds across hundreds of files. A generator gives you a different
-mesh every time and no way to say "the same hat, brim 10% wider".
-
 ## Repository layout
 
 ```
@@ -216,14 +192,4 @@ docs/                    the renders in this README
 TypeScript throughout, run directly by node 24 in a checkout
 (`npm run polystory -- <command>`); `npm run build` emits `dist/` for the npm package.
 
-## Status and roadmap
-
-- **Now**: the engine, the profile/style split, `init` by scan and
-  interview, `style` by derivation or a calibration throw, `new`, the
-  review page, `doctor`, the three install routes, Blender as
-  an optional viewer and FBX exporter.
-- **Next**: notes made in Blender's own viewport coming back the same way
-  the page's pins do, and a pack of starter kinds (pickup, projectile,
-  hat, set piece) for `init`.
-
-MIT. Issues and recipes welcome.
+MIT.

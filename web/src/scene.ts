@@ -51,6 +51,14 @@ export type Viewer = {
   showRef(flag: boolean): void;
   setFigure(flag: boolean): void;
   setWireframe(flag: boolean): void;
+  /** The model's own clips, by name. */
+  clips: string[];
+  /** Plays a clip on a loop, or with null stops and shows the rest pose. */
+  play(name: string | null): void;
+  pause(flag: boolean): void;
+  clipState(): { name: string; time: number; paused: boolean } | null;
+  /** Frames of a clip side by side, framed on the whole motion, as a PNG data URL. */
+  clipStrip(name: string, frames?: number): string;
   reload(glbUrl: string): Promise<void>;
   resize(): void;
   dispose(): void;
@@ -188,6 +196,36 @@ function worldBounds(object: THREE.Object3D): THREE.Box3 {
   return new THREE.Box3().setFromObject(object);
 }
 
+// Everywhere any clip takes the model, so the floor goes under the lowest
+// point a wing beats down to and the camera frames the whole motion.
+function motionBounds(object: THREE.Object3D, clips: THREE.AnimationClip[], samples = 12): THREE.Box3 {
+  const box = worldBounds(object);
+
+  if (clips.length === 0) return box;
+
+  const mixer = new THREE.AnimationMixer(object);
+
+  for (const clip of clips) {
+    const action = mixer.clipAction(clip);
+    action.setLoop(THREE.LoopOnce, 1);
+    action.clampWhenFinished = true;
+    action.play();
+
+    for (let i = 0; i <= samples; i++) {
+      action.reset();
+      mixer.setTime((clip.duration * i) / samples);
+      box.union(worldBounds(object));
+    }
+
+    action.stop();
+  }
+
+  mixer.uncacheRoot(object);
+  object.updateWorldMatrix(true, true);
+
+  return box;
+}
+
 export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   const { container, config, interactive } = opts;
   const units = config.unitsPerMetre;
@@ -228,6 +266,10 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   let model: THREE.Object3D = new THREE.Group();
   let ref: THREE.Object3D | null = null;
   let bounds = new THREE.Box3();
+  // A render is of the rest pose and frames that; the page plays clips and
+  // frames everywhere they go.
+  let restBounds = new THREE.Box3();
+  const framed = () => (interactive ? bounds : restBounds);
   let refBounds: THREE.Box3 | null = null;
   const rigBounds = rig ? worldBounds(rig) : null;
   const figure = new THREE.Group();
@@ -235,7 +277,7 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   scene.add(figure);
   let floor: THREE.Mesh | null = null;
 
-  function mount(object: THREE.Object3D): void {
+  function mount(object: THREE.Object3D, clips: THREE.AnimationClip[] = []): void {
     prepareMeshes(object);
 
     if (config.mount === "socket" && socket) {
@@ -251,8 +293,7 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
       stage.add(object);
     } else {
       stage.add(object);
-      const box = worldBounds(object);
-      object.position.y -= box.min.y;
+      object.position.y -= motionBounds(object, clips).min.y;
     }
   }
 
@@ -260,18 +301,25 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
     object.parent?.remove(object);
   }
 
-  async function load(url: string): Promise<THREE.Object3D> {
+  async function load(url: string): Promise<{ scene: THREE.Object3D; animations: THREE.AnimationClip[] }> {
     const gltf = await loader.loadAsync(url);
-    mount(gltf.scene);
+    mount(gltf.scene, gltf.animations);
 
-    return gltf.scene;
+    return gltf;
   }
 
-  model = await load(opts.glbUrl);
-  bounds = worldBounds(model);
+  let clips: THREE.AnimationClip[] = [];
+  let mixer: THREE.AnimationMixer | null = null;
+  let action: THREE.AnimationAction | null = null;
+  const clock = new THREE.Clock();
+  const loaded = await load(opts.glbUrl);
+  model = loaded.scene;
+  clips = loaded.animations;
+  restBounds = worldBounds(model);
+  bounds = motionBounds(model, clips);
 
   if (config.refUrl) {
-    ref = await load(config.refUrl);
+    ref = (await load(config.refUrl)).scene;
     refBounds = worldBounds(ref);
     ref.visible = false;
   }
@@ -357,7 +405,7 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   addLights(scene, lightAround, lightRadius);
   buildFloor();
   buildFigure();
-  let views = viewsFor(bounds);
+  let views = viewsFor(framed());
   let refViews = refBounds ? viewsFor(refBounds) : null;
 
   function applyPose(view: ViewPose): void {
@@ -404,8 +452,87 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   }
 
   function render(): void {
+    const dt = clock.getDelta();
+
+    if (mixer && action && !action.paused) mixer.update(dt);
+
     controls?.update();
     renderer.render(scene, camera);
+  }
+
+  function play(name: string | null): void {
+    mixer?.stopAllAction();
+    action = null;
+
+    if (name === null) return;
+
+    const clip = clips.find((c) => c.name === name);
+
+    if (!clip) throw new Error(`no clip ${JSON.stringify(name)}: ${clips.map((c) => c.name).join(", ") || "the model has none"}`);
+
+    mixer ??= new THREE.AnimationMixer(model);
+    action = mixer.clipAction(clip);
+    action.reset().play();
+    clock.getDelta();
+  }
+
+  function pause(flag: boolean): void {
+    if (action) action.paused = flag;
+  }
+
+  function clipState(): { name: string; time: number; paused: boolean } | null {
+    return action ? { name: action.getClip().name, time: action.time, paused: action.paused } : null;
+  }
+
+  function clipStrip(name: string, frames = 6): string {
+    const clip = clips.find((c) => c.name === name);
+
+    if (!clip) throw new Error(`no clip ${JSON.stringify(name)}`);
+
+    const strip = new THREE.AnimationMixer(model);
+    // Played once and held, so the last frame is the clip's end, not its start again.
+    const once = strip.clipAction(clip);
+    once.setLoop(THREE.LoopOnce, 1);
+    once.clampWhenFinished = true;
+    once.play();
+    // A once-played action pauses at its end, and setTime() would not move it again.
+    const poseAt = (t: number) => {
+      once.reset();
+      strip.setTime(t);
+    };
+    const times = Array.from({ length: frames }, (_, i) => (clip.duration * i) / Math.max(frames - 1, 1));
+    const reach = new THREE.Box3();
+
+    for (const t of times) {
+      poseAt(t);
+      reach.union(worldBounds(model));
+    }
+
+    const view = viewsFor(reach)[config.mount === "turntable" ? "quarter" : "close"];
+    const [w, h] = [360, 360];
+    const canvas = document.createElement("canvas");
+    canvas.width = w * frames;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d")!;
+    renderer.setSize(w, h, false);
+    applyPose({ ...view, res: [w, h] });
+    ctx.font = "600 15px -apple-system, Segoe UI, sans-serif";
+
+    times.forEach((t, i) => {
+      poseAt(t);
+      renderer.render(scene, camera);
+      ctx.drawImage(renderer.domElement, i * w, 0, w, h);
+      ctx.fillStyle = "rgba(20, 20, 24, 0.75)";
+      ctx.fillRect(i * w + 8, 8, 112, 26);
+      ctx.fillStyle = "#e8e8ee";
+      ctx.fillText(`${name} ${t.toFixed(2)} s`, i * w + 16, 27);
+    });
+
+    // Stopping the last action on a binding puts the rest pose back.
+    strip.stopAllAction();
+    strip.uncacheRoot(model);
+
+    return canvas.toDataURL("image/png");
   }
 
   function screenshot(type = "image/png", quality?: number): string {
@@ -443,7 +570,7 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
   function setFigure(flag: boolean): void {
     figure.visible = flag;
     config.scaleFigure = flag;
-    views = viewsFor(bounds);
+    views = viewsFor(framed());
     refViews = refBounds ? viewsFor(refBounds) : null;
   }
 
@@ -463,13 +590,23 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
 
   async function reload(glbUrl: string): Promise<void> {
     const next = await load(glbUrl);
+    const playing = action?.getClip().name ?? null;
+    mixer?.stopAllAction();
+    mixer = null;
+    action = null;
     unmount(model);
-    model = next;
+    model = next.scene;
+    clips = next.animations;
+    viewer.clips = clips.map((c) => c.name);
     model.visible = !(ref?.visible ?? false);
-    bounds = worldBounds(model);
+    restBounds = worldBounds(model);
+    bounds = motionBounds(model, clips);
+
+    if (playing && clips.some((c) => c.name === playing)) play(playing);
+
     buildFloor();
     buildFigure();
-    views = viewsFor(bounds);
+    views = viewsFor(framed());
     refViews = refBounds ? viewsFor(refBounds) : null;
     viewer.model = model;
     viewer.bounds = bounds;
@@ -499,6 +636,11 @@ export async function createViewer(opts: CreateViewerOpts): Promise<Viewer> {
     showRef,
     setFigure,
     setWireframe,
+    clips: clips.map((c) => c.name),
+    play,
+    pause,
+    clipState,
+    clipStrip,
     reload,
     resize,
     dispose,

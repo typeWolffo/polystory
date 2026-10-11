@@ -24,7 +24,7 @@ export type Gltf = {
   bufferViews?: { buffer: number; byteOffset?: number; byteLength: number; byteStride?: number }[];
   images?: unknown[];
   textures?: unknown[];
-  animations?: { name?: string }[];
+  animations?: { name?: string; channels?: { sampler: number; target: { node?: number; path: string } }[]; samplers?: { input: number; output: number; interpolation?: string }[] }[];
   skins?: { joints: number[] }[];
 };
 
@@ -137,7 +137,8 @@ export type Bounds = { min: number[]; max: number[] };
 
 // Triangles, vertices and the bounds across every primitive, from the
 // accessors alone so a check never touches the BIN chunk. Primitives of
-// one mesh may share a vertex buffer; it is counted once.
+// one mesh may share a vertex buffer; it is counted once. The bounds are
+// of the rest pose: each mesh's box moved by its node's world transform.
 export function meshStats(gltf: Gltf): { tris: number; verts: number; nonTriangle: boolean; bounds: Bounds | null } {
   let tris = 0;
   let verts = 0;
@@ -145,6 +146,13 @@ export function meshStats(gltf: Gltf): { tris: number; verts: number; nonTriangl
   const min = [Infinity, Infinity, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];
   const counted = new Set<number>();
+  const placements = [...nodeWorldMatrices(gltf)].filter(([i]) => gltf.nodes![i].mesh !== undefined).map(([i, m]) => ({ mesh: gltf.nodes![i].mesh!, matrix: m }));
+  const grow = (point: number[]) => {
+    for (let i = 0; i < 3; i++) {
+      min[i] = Math.min(min[i], point[i]);
+      max[i] = Math.max(max[i], point[i]);
+    }
+  };
 
   for (const mesh of gltf.meshes ?? []) {
     for (const prim of mesh.primitives) {
@@ -158,13 +166,19 @@ export function meshStats(gltf: Gltf): { tris: number; verts: number; nonTriangl
       tris += prim.indices === undefined ? position.count / 3 : gltf.accessors![prim.indices].count / 3;
 
       if (prim.mode !== undefined && prim.mode !== 4) nonTriangle = true;
+    }
+  }
 
-      if (position.min && position.max) {
-        for (let i = 0; i < 3; i++) {
-          min[i] = Math.min(min[i], position.min[i]);
-          max[i] = Math.max(max[i], position.max[i]);
-        }
-      }
+  const boxes = (placements.length ? placements : (gltf.meshes ?? []).map((_, mesh) => ({ mesh, matrix: IDENTITY }))).flatMap(({ mesh, matrix }) =>
+    gltf.meshes![mesh].primitives.map((prim) => ({ accessor: gltf.accessors![prim.attributes.POSITION], matrix })),
+  );
+
+  for (const { accessor, matrix } of boxes) {
+    if (!accessor.min || !accessor.max) continue;
+
+    for (let corner = 0; corner < 8; corner++) {
+      const [x, y, z] = [0, 1, 2].map((k) => ((corner >> k) & 1 ? accessor.max![k] : accessor.min![k]));
+      grow([0, 1, 2].map((k) => matrix[k] * x + matrix[4 + k] * y + matrix[8 + k] * z + matrix[12 + k]));
     }
   }
 
@@ -264,19 +278,31 @@ function faceNormal(pos: Float32Array, a: number, b: number, c: number): number[
 
 export type NodeWorld = { name: string; position: number[]; mesh?: number; skin?: number; children: number[] };
 
-// World translation of every node, for socket tables and root checks.
-export function nodeWorldPositions(gltf: Gltf): Map<number, NodeWorld> {
+export function nodeWorldMatrices(gltf: Gltf): Map<number, number[]> {
   const nodes = gltf.nodes ?? [];
-  const out = new Map<number, NodeWorld>();
+  const out = new Map<number, number[]>();
   const visit = (index: number, parent: number[]) => {
     const node = nodes[index];
     const world = multiply(parent, node.matrix ?? trs(node));
-    out.set(index, { name: node.name ?? "", position: [world[12], world[13], world[14]], mesh: node.mesh, skin: node.skin, children: node.children ?? [] });
+    out.set(index, world);
 
     for (const child of node.children ?? []) visit(child, world);
   };
 
   for (const scene of gltf.scenes ?? []) for (const root of scene.nodes ?? []) visit(root, IDENTITY);
+
+  return out;
+}
+
+// World translation of every node, for socket tables and root checks.
+export function nodeWorldPositions(gltf: Gltf): Map<number, NodeWorld> {
+  const nodes = gltf.nodes ?? [];
+  const out = new Map<number, NodeWorld>();
+
+  for (const [index, world] of nodeWorldMatrices(gltf)) {
+    const node = nodes[index];
+    out.set(index, { name: node.name ?? "", position: [world[12], world[13], world[14]], mesh: node.mesh, skin: node.skin, children: node.children ?? [] });
+  }
 
   return out;
 }

@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 
+import { sampleClips } from "./animate.ts";
 import { writeGlb } from "./glb-write.ts";
 import { assemble, Kit } from "./kit.ts";
 import type { BuildStats, Item, Knobs, Recipe, Style } from "./types.ts";
@@ -30,10 +31,10 @@ export function knobsFor(style: Style, kind: string): Knobs {
 export type BuildResult = BuildStats & { file: string; bytes: number };
 
 export function buildToFile(recipe: Recipe, style: Style, outPath: string, knobs = knobsFor(style, recipe.ITEM.kind)): BuildResult {
-  const kit = new Kit(knobs, style.materials);
+  const kit = new Kit(knobs, style.materials, recipe.ITEM.id);
   recipe.build(kit);
-  const { geometry, materials, stats } = assemble(kit, recipe.ITEM.smooth_angle);
-  const glb = writeGlb(recipe.ITEM.id, geometry, materials.map((name) => ({ name, spec: style.materials[name] })));
+  const { root, materials, stats } = assemble(kit, recipe.ITEM.smooth_angle);
+  const glb = writeGlb(root, materials.map((name) => ({ name, spec: style.materials[name] })), sampleClips(kit.clips, root));
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, glb);
 

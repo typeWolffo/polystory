@@ -28,6 +28,9 @@
   .views button:hover, .tools button:hover { border-color:var(--muted); }
   .tools button.on { border-color:var(--accent); color:var(--accent); }
   .tools button.hidden { display:none; }
+  .clips { position:absolute; right:12px; bottom:12px; display:flex; gap:6px; }
+  .clips button { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 10px; font:inherit; font-size:12px; cursor:pointer; }
+  .clips button.on { border-color:var(--accent); color:var(--accent); }
   .label { position:absolute; transform:translate(-50%,-130%); background:var(--pin); color:#fff; font-weight:700; font-size:12px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none; box-shadow:0 2px 8px rgba(0,0,0,.5); }
   .label.check { background:var(--muted); }
   .label.resolved { background:var(--accent); color:#0b2b25; }
@@ -76,6 +79,7 @@
     <button id="figure">scale figure</button>
     <button id="ref" class="hidden">show reference</button>
   </div>
+  <div class="clips" id="clips"></div>
   <div class="hint">drag to orbit · scroll to zoom · <b>click the model to drop a pin</b></div>
   <div id="toast"></div>
 </section>

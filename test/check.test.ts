@@ -64,3 +64,15 @@ test("a recipe-built file off the origin is an error, a hand-made one a warning"
   const ok = checkFile({ root, profile, style, file: join(root, "models/calibration.glb") });
   assert.ok(!ok.errors.some((e) => e.includes("origin")));
 });
+
+test("parts and clips pass the check and show in the summary", async () => {
+  const root = await project();
+  const recipe = await loadRecipe(join(ROOT, "skills/polystory/templates/recipes/animated.ts"));
+  recipe.ITEM.id = "chest";
+  buildToFile(recipe, { schemaVersion: 1, knobs: DIRECTIONS.faceted.knobs, materials: DIRECTIONS.faceted.materials }, join(root, "models/chest.glb"));
+  const { profile } = loadProfile(root);
+  const { style } = loadStyle(root);
+  const { errors, summary } = checkFile({ root, profile, style, file: join(root, "models/chest.glb") });
+  assert.deepEqual(errors, []);
+  assert.match(summary, /1 part · clips open 0\.60 s, idle 2\.00 s$/);
+});

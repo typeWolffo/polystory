@@ -32,8 +32,22 @@ apply there, with its numbers.
 - Under the target, always under the cap. The default knobs spend
   triangles on segments and bevels; when a part is small on screen, give
   it fewer segments rather than removing the bevel.
-- One file per model, no empties, no animation, no skin unless the kind
-  has a skinned budget.
+- One file per model, no skin unless the kind has a skinned budget.
+  Parts, markers and clips only where the game moves or finds something:
+  a static prop is one mesh.
+
+## Motion
+
+- A pivot sits at the joint, not at the part's centre: the back edge of a
+  lid, the shoulder of a wing, the centre of a wheel. The clip strip shows
+  a wrong pivot at once: the part swings off its hinge.
+- A loop ends on its first pose; a one-shot (`open`, `hit`) ends where the
+  game leaves it. Ask which clips the game plays and their names before
+  inventing any.
+- Big and few: a motion that reads from the game's distance is a large
+  angle on one or two parts, eased (`smooth`) where it starts and stops.
+- Nothing moving passes through the rest of the model at any frame; look
+  at every frame of the strip, not just the first and last.
 
 ## The loop
 

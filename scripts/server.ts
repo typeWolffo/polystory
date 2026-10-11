@@ -44,6 +44,8 @@ export type ReviewPin = {
   screenshotPath?: string;
   state?: "open" | "check" | "resolved";
   iteration?: number;
+  /** The clip and its time when the pin was dropped on a moving model. */
+  clip?: { name: string; time: number };
 };
 
 export type ReviewPayload = {

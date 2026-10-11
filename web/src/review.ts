@@ -19,6 +19,7 @@ type Pin = Pick & {
   text: string;
   iteration: number;
   state: "open" | "check" | "resolved";
+  clip?: { name: string; time: number };
   dot: THREE.Mesh;
   label: HTMLDivElement;
   entry?: HTMLDivElement;
@@ -92,6 +93,32 @@ function renderViewButtons(): void {
   }
 }
 
+// A clip button plays its clip on a loop and pauses it on a second click;
+// "rest" stops and shows the pose the file was modelled in.
+function renderClipButtons(): void {
+  const bar = $("clips");
+  bar.innerHTML = "";
+
+  if (viewer.clips.length === 0) return;
+
+  const state = viewer.clipState();
+  const names: (string | null)[] = [null, ...viewer.clips];
+
+  for (const name of names) {
+    const button = document.createElement("button");
+    const active = name !== null && state?.name === name;
+    button.textContent = name === null ? "rest" : `${active && !state?.paused ? "❚❚" : "▶"} ${name}`;
+    button.classList.toggle("on", name === null ? !state : active);
+    button.addEventListener("click", () => {
+      if (active) viewer.pause(!state!.paused);
+      else viewer.play(name);
+
+      renderClipButtons();
+    });
+    bar.appendChild(button);
+  }
+}
+
 function renderList(): void {
   const list = $("pins");
   list.innerHTML = pins.length ? "" : '<div class="empty">Click the model where something is off.</div>';
@@ -101,7 +128,8 @@ function renderList(): void {
     el.className = `pin ${pin.state}`;
     pin.entry = el;
     const resolve = pin.state === "open" ? "" : `<label><input type="checkbox" ${pin.state === "resolved" ? "checked" : ""}> resolved</label>`;
-    el.innerHTML = `<div class="n">${pin.id}</div><div><textarea placeholder="What is wrong here?"></textarea><div class="where">on <b>${pin.material || "mesh"}</b>${pin.on === "reference" ? " of the <b>reference</b>" : ""} · from iteration ${pin.iteration} · camera and screenshot saved ${resolve}</div></div><button class="x" title="remove">×</button>`;
+    const moment = pin.clip ? ` · at <b>${pin.clip.name}</b> ${pin.clip.time.toFixed(2)} s` : "";
+    el.innerHTML = `<div class="n">${pin.id}</div><div><textarea placeholder="What is wrong here?"></textarea><div class="where">on <b>${pin.material || "mesh"}</b>${pin.on === "reference" ? " of the <b>reference</b>" : ""}${moment} · from iteration ${pin.iteration} · camera and screenshot saved ${resolve}</div></div><button class="x" title="remove">×</button>`;
     const textarea = el.querySelector("textarea")!;
     textarea.value = pin.text;
     textarea.addEventListener("input", () => {
@@ -147,6 +175,14 @@ function updateSend(): void {
 }
 
 function addPin(hit: Pick): void {
+  // A pin on a moving part would be left behind: the clip holds still under it.
+  const playing = viewer.clipState();
+
+  if (playing && !playing.paused) {
+    viewer.pause(true);
+    renderClipButtons();
+  }
+
   const extent = new THREE.Vector3();
   viewer.bounds.getSize(extent);
   const radius = Math.max(extent.x, extent.y, extent.z) * 0.015;
@@ -165,6 +201,7 @@ function addPin(hit: Pick): void {
     text: "",
     iteration: status?.iteration ?? 0,
     state: "open",
+    clip: playing ? { name: playing.name, time: playing.time } : undefined,
     dot,
     label,
   };
@@ -233,7 +270,7 @@ function payload(result: "changes" | "accepted" | "rejected") {
     model: status?.model,
     iteration: status?.iteration ?? 0,
     general: $<HTMLTextAreaElement>("general").value,
-    pins: pins.map(({ id, point, normal, material, on, camera, text, screenshot, state, iteration }) => ({ id, point, normal, material, on, camera, text, screenshot, state, iteration })),
+    pins: pins.map(({ id, point, normal, material, on, camera, text, screenshot, state, iteration, clip }) => ({ id, point, normal, material, on, camera, text, screenshot, state, iteration, clip })),
   };
 }
 
@@ -292,6 +329,7 @@ async function poll(): Promise<void> {
 
       renderList();
       renderViewButtons();
+      renderClipButtons();
       toast(`iteration ${next.iteration} loaded · pins from before are marked "to check"`);
     }
 
@@ -327,6 +365,10 @@ async function main(): Promise<void> {
   applyStatus(first);
   viewer = await createViewer({ container: stage, glbUrl: `/model.glb?t=${first.mtime}`, config, interactive: true });
   renderViewButtons();
+
+  if (viewer.clips.length) viewer.play(viewer.clips[0]);
+
+  renderClipButtons();
   wirePointer();
   wireTools(config);
   wireFooter();

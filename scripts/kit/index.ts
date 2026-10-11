@@ -1,1 +1,1 @@
-export type { Item, Kit, Knobs, MaterialSpec, Recipe, Style } from "./types.ts";
+export type { ClipOpts, Item, Kit, Knobs, LoftSection, MaterialSpec, Recipe, Style, Track, Vec3, Warp } from "./types.ts";

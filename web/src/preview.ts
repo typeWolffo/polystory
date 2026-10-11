@@ -50,6 +50,8 @@ async function run(): Promise<void> {
     viewer.showRef(false);
   }
 
+  for (const name of viewer.clips) bridge.shots[`clip_${name}`] = viewer.clipStrip(name);
+
   bridge.done = true;
   document.title = "ready";
 }

@@ -34,13 +34,18 @@ where the project builds those (the profile's `description`).
 
 ## 3. Recipe
 
-Write `<recipes>/<model>.ts` from `polystory guide slotted`
-or `polystory guide flat`. The kit has `cylinder`, `cone`, `sphere`, `box`, `torus`,
-`tube`; every call takes a palette material from `style.json` and lands in
-the item's own space. Bevel, segments and shading come from the style's
-knobs; override per call only with a reason you can say out loud. One
-dominant mass, one accent; sizes from `style.md`'s envelopes, not from
-guesswork.
+Write `<recipes>/<model>.ts` from `polystory guide slotted`,
+`polystory guide flat`, or `polystory guide animated` for something that
+moves. The kit (`polystory guide recipe`) has primitives, lathe, blob,
+tube, extrude, loft, hull, any three.js geometry through `mesh`, cuts,
+warps, parts with pivots, markers and clips; every call takes a palette
+material from `style.json` and lands in the item's own space. Bevel,
+segments and shading come from the style's knobs; override per call only
+with a reason you can say out loud. One dominant mass, one accent; sizes
+from `style.md`'s envelopes, not from guesswork. When the brief moves (a
+lid that opens, wings that flap, a wheel that turns), ask which clips the
+game plays and how long each runs, then build the moving pieces as parts
+with their pivots at the joints.
 
 ## 4. Build
 
@@ -61,7 +66,11 @@ fills the frame), `figure` (on the rig) and `far` (from the game's
 viewing distance); without one, `front`, `quarter` and `top` on a
 turntable floor of 10 cm cells, plus `scale` beside a 1.75 m figure when
 the profile asks for it. With `--ref`, the same views of the reference
-model mounted the same way.
+model mounted the same way. A model with clips also gets
+`<model>_clip_<name>.png` per clip: six frames from start to end, side by
+side, framed on the whole motion; read them like the views: does the part
+turn about the right point, does it pass through anything, does a loop
+end where it starts.
 Open every one with the Read tool and judge against `craft.md`: does it
 sit where it should, does it clip anything, is the bevel visible up
 close, does the shape survive the far view, is it as chunky as the
@@ -73,10 +82,12 @@ or the next one: a tab that is already on the page is reused and brought
 to the front (macOS and Linux, where the browser allows it), and it
 reloads the model by itself, so the user keeps one tab for the whole
 session. `--no-open` only when they asked not to be
-interrupted. The command prints what came back and writes it
-under `.polystory/review/<model>/`; each pin has a point, a normal, the
-camera and a screenshot (`<n>-pin-<k>.jpg`, open them with the Read tool
-to see what they saw). `changes` means back to step 3 with those notes;
+interrupted. The page plays the first clip on a loop, with a button per
+clip and one for the rest pose. The command prints what came back and
+writes it under `.polystory/review/<model>/`; each pin has a point, a
+normal, the camera and a screenshot (`<n>-pin-<k>.jpg`, open them with
+the Read tool to see what they saw), and on a moving model the clip and
+the second it was dropped at (the clip pauses there). `changes` means back to step 3 with those notes;
 `rejected` means the direction is wrong, ask before rebuilding;
 `accepted` means step 6. Without a browser on their side (a remote
 session), send the renders with SendUserFile instead and ask in chat.

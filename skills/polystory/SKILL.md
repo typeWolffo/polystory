@@ -1,6 +1,6 @@
 ---
 name: polystory
-description: Model 3D game assets as code with three.js. One TypeScript recipe per model, built in node into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for the agent, then reviewed by the user in a local page with pins and registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Blender optional. Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
+description: Model 3D game assets as code with three.js. One TypeScript recipe per model (primitives, extrude, loft, cuts, warps, parts on pivots and animation clips), built in node into a GLB, checked against the project's triangle and byte budgets, size envelopes and palette, rendered on the project's rig or a turntable for the agent, then reviewed by the user in a local page with pins and registered the way the project does. Subcommands - init (the facts: folders, units, budgets, rig, sockets, registration), style (the look: palette and bevel/shading knobs, derived from existing GLBs or chosen from four rendered directions), new (a model), doctor (can a build run here). Blender optional. Use for "zamodeluj", "model 3D", "nowy model / rekwizyt / czapka / pocisk", "new 3D asset / prop / hat / pickup / projectile", "an animated prop: a lid that opens, wings that flap", "GLB", "low poly", "set up 3D modelling for this project", "what should our models look like". Not for skinned garments or textured, sculpted or scanned meshes.
 argument-hint: "init | style [derive|throw] | new <kind> <id> [description] | doctor"
 allowed-tools: Bash(npx -y polystory *), Bash(npx polystory *), Bash(polystory *), Bash(command -v polystory), Read(${CLAUDE_SKILL_DIR}/**)
 ---
@@ -55,7 +55,7 @@ Routing:
 Shared references, loaded when the subcommand's reference says so:
 `polystory guide profile` (the two schemas), `polystory guide recipe`
 (ITEM and the kit), `polystory guide craft` (what makes a model read).
-Templates: `polystory guide slotted`, `guide flat` (recipes),
+Templates: `polystory guide slotted`, `guide flat`, `guide animated` (recipes),
 `guide style.md`, `guide profile.json`.
 
 ## Rules that hold in every subcommand
